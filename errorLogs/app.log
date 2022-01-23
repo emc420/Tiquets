@@ -1,0 +1,9 @@
+root - ERROR - ####orders without barcodes######
+root - ERROR - 456
+root - ERROR - #######Duplicate Barcodes#####
+root - ERROR - 531    11111111649
+547    11111111665
+556    11111111674
+559    11111111595
+582    11111111700
+Name: barcode, dtype: object
