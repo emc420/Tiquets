@@ -1,11 +1,9 @@
 import psycopg2
 import pandas as pd
-import math
+import math, sys
 
 
-def create_csv(csv_path):
-    
-    #validation of data
+def create_csv(csv_path): 
     
     listO = [] 
     listB = []
@@ -14,8 +12,8 @@ def create_csv(csv_path):
     for index, row in (read_excel(csv_path+'\\barcodes.csv')).iterrows():
         listB.append({'barcode':row['barcode'], 'order_id':row['order_id'] })
      
-    # generates output file that contains customer_id, order_id1, [barcode1, barcode2, ...]
-    barcodes = pd.DataFrame(listB)
+    #validation of data
+    barcodes = validate_duplicate_barcodes(no_orders_without_barcodes(pd.DataFrame(listB)))
     orders = pd.DataFrame(listO)
     colate = ((pd.merge(barcodes, orders, on="order_id")).sort_values(['customer_id', 'order_id'])).reset_index()
     temp_cust = None
@@ -23,6 +21,8 @@ def create_csv(csv_path):
     dict1 = {}
     list_codes=[]
     listModified=[]
+    # generates output file that contains customer_id, order_id1, [barcode1, barcode2, ...]
+    
     for index, row in colate.iterrows():
         if temp_cust!=row['customer_id'] or temp_order!=row['order_id']:
             if index!=0:
@@ -75,6 +75,17 @@ def top5cust(data_out):
         cnt = cnt+len(row['barcode'])
     return (pd.DataFrame(listModified)).nlargest(5, 'amount_of_tickets')
     
+def validate_duplicate_barcodes(barcodes):
+    barcodes.drop_duplicates(subset ="barcode", inplace = True)
+    return barcodes
+
+def no_orders_without_barcodes(barcodes):
+    for index, row in barcodes.iterrows():
+        if not math.isnan(row['order_id']) and math.isnan(row['barcode']):
+            print('####orders without barcodes######')
+            print(row['order_id'], file=sys.stderr, end='')
+            barcodes.drop(index, inplace=True)
+    return barcodes
 
 create_csv('data')
 
