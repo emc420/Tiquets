@@ -10,19 +10,14 @@ def create_csv(csv_path):
     listO = [] 
     listB = []
     for index, row in (read_excel(csv_path+'\orders.csv')).iterrows():
-        dict1={}
-        dict1['customer_id'] = row['customer_id']
-        dict1['order_id'] = row['order_id']
-        listO.append(dict1)
+        listO.append({'customer_id':row['customer_id'], 'order_id':row['order_id'] })
     for index, row in (read_excel(csv_path+'\\barcodes.csv')).iterrows():
-        dict1={}
-        dict1['barcode'] = row['barcode']
-        dict1['order_id'] = row['order_id']
-        listB.append(dict1)
+        listB.append({'barcode':row['barcode'], 'order_id':row['order_id'] })
      
     # generates output file that contains customer_id, order_id1, [barcode1, barcode2, ...]
-    
-    colate = ((pd.merge(pd.DataFrame(listO), pd.DataFrame(listB), on="order_id")).sort_values(['customer_id', 'order_id'])).reset_index()
+    barcodes = pd.DataFrame(listB)
+    orders = pd.DataFrame(listO)
+    colate = ((pd.merge(barcodes, orders, on="order_id")).sort_values(['customer_id', 'order_id'])).reset_index()
     temp_cust = None
     temp_order = None
     dict1 = {}
@@ -51,6 +46,11 @@ def create_csv(csv_path):
     
     #unused barcodes
     
+    print('######Unused Barcodes######')
+    for index, row in barcodes.iterrows():
+        if math.isnan(row['order_id']):
+            print(math.trunc(row['barcode']))
+    
     #db storage
 
 def read_excel(filepath):
@@ -74,6 +74,7 @@ def top5cust(data_out):
             temp_cust = row['customer_id']
         cnt = cnt+len(row['barcode'])
     return (pd.DataFrame(listModified)).nlargest(5, 'amount_of_tickets')
+    
 
 create_csv('data')
 
